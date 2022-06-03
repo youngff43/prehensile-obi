@@ -135,7 +135,7 @@ function addDepartment() {
     })
     }
 
-    //function to add a new role, show the new role in a table, and return to menu
+//function to add a new role, show the new role in a table, and return to menu
 function addRole() {
     connection.query(`SELECT * FROM departments;`, (err, res) => {
     let chooseDepartment = res.map(departments => ({name: departments.dept_name, value: departments.id }));
@@ -169,9 +169,6 @@ function addRole() {
         let sqlTwo = `INSERT INTO roles (title, salary, dept_id) VALUES (?,?,?);`
         connection.query(sqlTwo, [ answer.rolename, answer.rolesalary, answer.roledept ], function (err, res) {
             if (err) throw err;
-        // connection.query (`SELECT roles.id, roles.title, roles.salary, departments.dept_name AS department
-        //                     FROM roles
-        //                     LEFT JOIN departments ON roles.dept_id = departments.id;`, 
             console.log('\n');
             console.table(answer);
             menuPrompt();
@@ -231,10 +228,11 @@ function addEmployee() {
         let sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?);`
         connection.query(sql, [ answer.employeefirst, answer.employeelast, answer.employeerole, answer.employeemanager ], function (err, res) {
             if (err) throw err;
+        })
         connection.query(`INSERT INTO roles (dept_id) VALUES (?);`, [ answer.dept ], function (err, res) {
             if (err) throw err;
             menuPrompt();
             })
         })
     })
-    })})}
+    })}
