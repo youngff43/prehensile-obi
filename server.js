@@ -16,7 +16,7 @@ const connection = mysql.createConnection(
 
 connection.connect(function(err) {
     if (err) throw err;
-        console.log("You are connected to the Company Info Database as id " + connection.threadId);
+        console.log("You are connected to the Company Info Database as id " + connection.threadId + ".\n");
         menuPrompt();
     });
 
@@ -32,10 +32,10 @@ function menuPrompt() {
             'Add a Department',
             'Add a Role',
             'Add an Employee',
+            'Update an Employee',
             'Exit'
-        ],
-    },)
-    .then(function ({ menu }) {
+        ],},
+    ).then(function ({ menu }) {
         switch (menu) {
             case 'View all Departments':
                 viewallDepartments();
@@ -61,13 +61,13 @@ function menuPrompt() {
                 addEmployee();
                 break;
 
-            // case 'Update an Employee':
-            //     updateEmployee();
-            //     break;
-    
+            case 'Update an Employee':
+                updateEmployee();
+                break;
+      
             case 'Exit':
-              connection.exit();
-              break;
+                connection.end();
+                break;
           }
         });
     }
@@ -104,6 +104,7 @@ function viewallEmployees() {
                 INNER JOIN departments ON departments.id = roles.dept_id
                 LEFT JOIN employees manager on manager.id = employees.manager_id;`;
                 connection.query(sql, function (err, res) {
+                    if (err) throw err;
                     console.log('\n');
                     console.table(res);
                     menuPrompt();
@@ -123,14 +124,11 @@ function addDepartment() {
                 }
                 return true
             },
-        },
-    ])
-    .then(function (answer) {
+        },]).then(function (answer) {
         let sql = `INSERT INTO departments (dept_name) VALUES (?)`
         connection.query(sql, [answer.deptname], function (err, res) {
             if (err) throw err;
             viewallDepartments();
-            menuPrompt();
         });
     })
     }
@@ -164,16 +162,13 @@ function addRole() {
             message: 'Choose the department assosiated with the role.',
             choices: chooseDepartment
         },
-    ])
-    .then(function(answer) {
-        let sqlTwo = `INSERT INTO roles (title, salary, dept_id) VALUES (?,?,?);`
+    ]).then(function(answer) {
+        let sqlTwo = `INSERT INTO roles (title, salary, dept_id) VALUES (?,?,?);`;
         connection.query(sqlTwo, [ answer.rolename, answer.rolesalary, answer.roledept ], function (err, res) {
             if (err) throw err;
             console.log('\n');
-            console.table(answer);
-            menuPrompt();
-        }
-        )     
+            viewallRoles();
+        })     
     });
   });
 };
@@ -223,16 +218,46 @@ function addEmployee() {
             message: 'Choose the employees manager',
             choices: managers
         }
-    ])
-    .then((answer) => {
+    ]).then(function (answer) {
         let sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?);`
         connection.query(sql, [ answer.employeefirst, answer.employeelast, answer.employeerole, answer.employeemanager ], function (err, res) {
             if (err) throw err;
-        })
-        connection.query(`INSERT INTO roles (dept_id) VALUES (?);`, [ answer.dept ], function (err, res) {
-            if (err) throw err;
+            console.log(`\n ${answer.employeefirst} ${answer.employeelast} has been added to the database.\n`);
             menuPrompt();
+        })     
+    });
+});
+})};
+
+// function to update the employee role 
+function updateEmployee() {
+let sql = `SELECT * FROM roles;`;
+connection.query(sql, function (err, res) {
+    if (err) throw err;
+    let roles = res.map(roles => ({name: roles.title, value: roles.id }));
+    let sqlTwo = `SELECT * FROM employees;`;
+    connection.query(sqlTwo, function (err, res) {
+        if (err) throw err;
+        let employees = res.map(employees => ({name: employees.first_name + ' ' + employees.last_name, value: employees.id}));
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "employeename",
+                message: "Which employees role would you like to update?",
+                choices: employees
+            },
+            {
+                type: "list",
+                name: "rolelist",
+                message: "Choose the new role for the employee",
+                choices: roles
+            }
+        ]).then(function (answer) {
+            let sqlThree = `UDATE employees (role_id, id) VALUES (?,?);`;
+            connection.query(sqlThree, [ answer.employeename, answer.rolelist ], function (err, res) {
+                if (err) throw err;
+                console.log(`\n ${answer.employeename} has had their role updated to ${answer.rolelist}\n`);
+                menuPrompt();
+                })
             })
-        })
-    })
-    })}
+        })})};
