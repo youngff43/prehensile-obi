@@ -1,7 +1,7 @@
 # Employee Tracker 
 ## Description
 A command-line application that allows a user to be able to view and manage departments, roles, and employees in a company to organize and plan their business. Once the user starts the application with 'node server.js' they are presented with the following options:
-
+https://user-images.githubusercontent.com/99932948/171981524-a3c439cf-71da-40b6-a97f-99b6f2cc9996.mp4
 ## Click on the Options Below for more Information 
 * [View all Departments](#view_all_departments)
 * [View all Roles](#View_all_Roles)
